@@ -30,12 +30,17 @@ productController.createProduct = async (req, res, next) => {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      console.log('Validation Error:', errors.array())
       return res.status(400).json(errors)
     }
     const { name, price, category, imageLink } = req.body
     const existingCategory = await Category.findOne({ name: category })
     if (!existingCategory) {
       return res.status(404).json({ error: 'Category not found' })
+    }
+    const existingProduct = await Product.findOne({ name })
+    if (existingProduct) {
+      return res.status(400).json({ error: 'Product already exists' })
     }
     const newProduct = new Product({
       name,
