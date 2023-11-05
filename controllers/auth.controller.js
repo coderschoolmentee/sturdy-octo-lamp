@@ -11,11 +11,11 @@ authController.loginWithEmail = async (req, res, next) => {
     const { email, password } = req.body
     const user = await User.findOne({ email }, '+password')
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email!' })
+      return res.status(401).json({ error: 'Invalid email or password!' })
     }
     const isPasswordValid = await user.comparePassword(password)
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid password' })
+      return res.status(401).json({ error: 'Invalid email or password!' })
     }
     const accessToken = user.generateToken()
     res

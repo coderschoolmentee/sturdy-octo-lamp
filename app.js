@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   if (err.name === 'ValidationError') {
     const validationErrors = Object.values(err.errors).map(error => error.message)
+    console.log('err')
     res.status(400).json({ error: validationErrors })
   } else {
     res.status(500).json({ error: err.message || 'Internal Server Error' })
@@ -35,7 +36,8 @@ app.use((err, req, res, next) => {
 })
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI_LOCAL)
+  // .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB')
   })

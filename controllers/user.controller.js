@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator')
 const User = require('../models/user.model')
+const bcrypt = require('bcrypt')
 const userController = {}
-
 userController.register = async (req, res, next) => {
   try {
     const errors = validationResult(req)
@@ -28,7 +28,6 @@ userController.register = async (req, res, next) => {
     next(error)
   }
 }
-
 userController.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id)
@@ -38,16 +37,29 @@ userController.getMe = async (req, res, next) => {
     next(error)
   }
 }
-
 userController.updateProfile = async (req, res, next) => {
   try {
-    const { avatarUrl } = req.body
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() })
+    }
+    const { oldPassword, newPassword, avatarUrl } = req.body
+    if (oldPassword && newPassword) {
+      const user = await User.findById(req.user.id).select('+password')
+      const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password)
+      if (!isOldPasswordValid) {
+        return res.status(401).json({ error: 'Invalid old password' })
+      }
+      user.password = newPassword
+      await user.save()
+      return res.status(200).json({ message: 'Password changed successfully' })
+    }
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      req.user.id,
       { avatarUrl },
       { new: true }
     )
-    res.status(200).json({ message: 'Avatar updated successfully', user: updatedUser })
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser })
   } catch (error) {
     console.log('ERROR: ', error)
     next(error)

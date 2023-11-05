@@ -20,8 +20,8 @@ orderController.createOrder = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() })
     }
 
-    const { totalAmount, customer, items } = req.body
-    const newOrder = new Order({ totalAmount, customer, items })
+    const { totalAmount, items } = req.body
+    const newOrder = new Order({ totalAmount, items })
     const savedOrder = await newOrder.save()
 
     const populatedOrder = await Order.findById(savedOrder._id).populate(
