@@ -16,9 +16,6 @@ router.post(
 
 router.get('/me', authMiddleware.loginRequired, userController.getMe)
 
-router.put('/:id', [
-  body('oldPassword').notEmpty().withMessage('Old password is required'),
-  body('newPassword').notEmpty().withMessage('New password is required').isLength({ min: 3 }).withMessage('Minimum 3 characters')
-], authMiddleware.loginRequired, userController.updateProfile)
+router.put('/:id', authMiddleware.loginRequired, userController.updateProfile)
 
 module.exports = router
