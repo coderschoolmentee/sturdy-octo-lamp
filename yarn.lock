@@ -232,6 +232,7 @@ __metadata:
     jsonwebtoken: "npm:^9.0.0"
     mongoose: "npm:^7.3.1"
     morgan: "npm:~1.9.1"
+    nodemailer: "npm:^6.9.7"
     nodemon: "npm:^2.0.22"
   languageName: unknown
   linkType: soft
@@ -1526,6 +1527,13 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 6d18c65cae4f8cc87c8ff53bfa2626f43adfda5d5fbccbfe1c94c4e115f978f6c09072546ece2cffa36aa05ef30c261976cdcaa2c8beea069771f582b2989e93
+  languageName: node
+  linkType: hard
+
+"nodemailer@npm:^6.9.7":
+  version: 6.9.7
+  resolution: "nodemailer@npm:6.9.7"
+  checksum: 5ea7f781782361890d4492dc2412496e89fb04c498814e6c4fe7b168a27d7491a00f725cf90c26768907506e8afb76e8cfe6f6300def9940bc7f7e323405eaa6
   languageName: node
   linkType: hard
 

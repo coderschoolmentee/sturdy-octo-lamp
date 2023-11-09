@@ -20,10 +20,22 @@ const userSchema = new mongoose.Schema(
       enum: ['admin', 'staff'],
       required: true
     },
-    avatarUrl: { type: String, require: false, default: '' },
+    avatarUrl: {
+      type: String,
+      require: false,
+      default: ''
+    },
     isDeleted: {
       type: Boolean,
       default: false
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null
     }
   },
   {
@@ -32,6 +44,9 @@ const userSchema = new mongoose.Schema(
 )
 
 userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next()
+  }
   const salt = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(this.password, salt)
   this.password = hashedPassword
@@ -58,6 +73,8 @@ userSchema.methods.toJSON = function () {
   const obj = this._doc
   delete obj.password
   delete obj.isDeleted
+  delete obj.resetPasswordToken
+  delete obj.resetPasswordExpires
   return obj
 }
 

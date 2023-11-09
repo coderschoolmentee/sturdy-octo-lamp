@@ -18,4 +18,20 @@ router.get('/me', authMiddleware.loginRequired, userController.getMe)
 
 router.put('/:id', authMiddleware.loginRequired, userController.updateProfile)
 
+router.post(
+  '/send-password-reset-token',
+  // [body('email').isEmail().withMessage('Invalid email domain')],
+  userController.sendPasswordResetToken
+)
+
+router.post(
+  '/reset-password',
+  [
+    body('email').isEmail().withMessage('Invalid email'),
+    body('token').notEmpty().withMessage('Token is required'),
+    body('newPassword').notEmpty().withMessage('New password is required')
+  ],
+  userController.resetPassword
+)
+
 module.exports = router
