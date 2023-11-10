@@ -13,6 +13,7 @@ router.post(
   ],
   userController.register
 )
+router.get('/verify/:token', userController.verifyEmail)
 
 router.get('/me', authMiddleware.loginRequired, userController.getMe)
 
