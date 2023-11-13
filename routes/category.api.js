@@ -5,6 +5,7 @@ const authMiddleware = require('../middlewares/auth.middleware')
 const { body } = require('express-validator')
 
 router.get('/', authMiddleware.loginRequired, categoryController.getCategories)
+router.get('/all', authMiddleware.loginRequired, categoryController.getAllCategories)
 
 router.post(
   '/',

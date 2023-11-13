@@ -5,6 +5,10 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true
+    },
     email: {
       type: String,
       required: true,
@@ -67,12 +71,13 @@ userSchema.methods.comparePassword = async function (password) {
 
 userSchema.methods.generateToken = function () {
   const payload = {
+    name: this.name,
     id: this._id,
     email: this.email,
     role: this.role
   }
   const options = {
-    expiresIn: '10d'
+    expiresIn: '60d'
   }
   return jwt.sign(payload, JWT_SECRET_KEY, options)
 }

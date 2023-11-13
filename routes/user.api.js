@@ -9,7 +9,8 @@ router.post(
   [
     body('email').isEmail().withMessage('Invalid email'),
     body('password').notEmpty().withMessage('Password is required'),
-    body('role').notEmpty().withMessage('Role is required')
+    body('role').notEmpty().withMessage('Role is required'),
+    body('name').notEmpty().withMessage('Name is required')
   ],
   userController.register
 )

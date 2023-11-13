@@ -8,7 +8,6 @@ const REACT_APP_EMAIL_PWD = process.env.REACT_APP_EMAIL_PWD
 const FRONTEND_URL = process.env.FRONTEND_URL
 // const FRONTEND_URL = process.env.FRONTEND_URL_LOCAL
 const userController = {}
-
 const transporter = createTransport({
   host: 'smtp-relay.brevo.com',
   port: 587,
@@ -18,6 +17,10 @@ const transporter = createTransport({
   }
 })
 
+const generateUniqueToken = () => {
+  return crypto.randomBytes(5).toString('hex')
+}
+
 const sendVerifyEmail = (verificationToken, email, res) => {
   const verificationLink = `${FRONTEND_URL}/verify/${verificationToken}`
   const message = `
@@ -25,14 +28,12 @@ const sendVerifyEmail = (verificationToken, email, res) => {
     <p>Thank you for registering! Click the following link to verify your email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `
-
   const mailOptions = {
     from: 'Simple Coffee POS <pos@example.com>',
     to: email,
     subject: 'Email Verification',
     html: message
   }
-
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error('Error sending email:', error)
@@ -55,7 +56,6 @@ const sendResetTokenEmail = (token, email, res) => {
     subject: 'Reset Password',
     html: message
   }
-
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error('Error sending email:', error)
@@ -73,12 +73,13 @@ userController.register = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
     }
-    const { email, password, role } = req.body
+    const { name, email, password, role } = req.body
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(409).json({ error: 'User already exists' })
     }
     const user = new User({
+      name,
       email,
       password,
       role
@@ -86,7 +87,6 @@ userController.register = async (req, res, next) => {
     const verificationToken = generateUniqueToken()
     user.verificationToken = verificationToken
     await user.save()
-
     sendVerifyEmail(verificationToken, email, res)
     // res
     //   .status(200)
@@ -101,16 +101,12 @@ userController.verifyEmail = async (req, res, next) => {
   try {
     const token = req.params.token
     const user = await User.findOne({ verificationToken: token })
-
     if (!user) {
       return res.status(400).json({ message: 'Invalid verification token' })
     }
-
     user.isVerified = true
     user.verificationToken = undefined
-    // const accessToken = user.generateToken()
     await user.save()
-
     return res.status(200).json({ message: 'Email verified successfully' })
   } catch (error) {
     console.error('ERROR: ', error)
@@ -127,6 +123,7 @@ userController.getMe = async (req, res, next) => {
     next(error)
   }
 }
+
 userController.updateProfile = async (req, res, next) => {
   try {
     const errors = validationResult(req)
@@ -160,9 +157,6 @@ userController.updateProfile = async (req, res, next) => {
     next(error)
   }
 }
-const generateUniqueToken = () => {
-  return crypto.randomBytes(5).toString('hex')
-}
 
 userController.sendPasswordResetToken = async (req, res, next) => {
   try {
@@ -191,6 +185,7 @@ userController.sendPasswordResetToken = async (req, res, next) => {
     next(error)
   }
 }
+
 userController.resetPassword = async (req, res, next) => {
   try {
     const errors = validationResult(req)
@@ -216,4 +211,5 @@ userController.resetPassword = async (req, res, next) => {
     next(error)
   }
 }
+
 module.exports = userController

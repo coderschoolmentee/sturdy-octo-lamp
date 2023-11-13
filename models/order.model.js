@@ -6,6 +6,9 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
+    staffName: {
+      type: String
+    },
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Customer'
@@ -27,13 +30,19 @@ const orderSchema = new mongoose.Schema(
           required: true
         }
       }
-    ]
+    ],
+    stringId: {
+      type: String
+    }
   },
   {
     timestamps: true
   }
 )
-
+orderSchema.pre('save', function (next) {
+  this.stringId = this._id.toString()
+  next()
+})
 const Order = mongoose.model('Order', orderSchema)
 
 module.exports = Order

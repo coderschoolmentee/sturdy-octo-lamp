@@ -1,4 +1,5 @@
 const Category = require('../models/category.model')
+const Product = require('../models/product.model')
 const categoryController = {}
 const { validationResult } = require('express-validator')
 
@@ -16,12 +17,54 @@ async function createDefaultCategory () {
   }
 }
 
-createDefaultCategory()
-
 categoryController.getCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find()
-    res.status(200).json(categories)
+    const { page = 1, limit = 5, search } = req.query
+    const skip = (page - 1) * limit
+    const query = {}
+
+    if (search) {
+      query.name = { $regex: new RegExp(search, 'i') }
+    }
+
+    const count = await Category.countDocuments(query)
+    const totalPages = Math.ceil(count / limit)
+
+    const categories = await Category.find(query)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+    if (categories.length === 0) {
+      return res.status(200).json({
+        message: 'No categories found.'
+      })
+    }
+    res.status(200).json({
+      loading: false,
+      categories,
+      currentPage: parseInt(page),
+      totalPages,
+      totalCategories: count
+    })
+  } catch (error) {
+    console.log('ERROR:', error)
+    next(error)
+  }
+}
+
+categoryController.getAllCategories = async (req, res, next) => {
+  try {
+    const categories = await Category.find().sort({ name: 1 })
+    if (categories.length === 0) {
+      return res.status(200).json({
+        message: 'No categories found.'
+      })
+    }
+    res.status(200).json({
+      loading: false,
+      categories,
+      totalCategories: categories.length
+    })
   } catch (error) {
     console.log('ERROR:', error)
     next(error)
@@ -77,11 +120,29 @@ categoryController.updateCategory = async (req, res, next) => {
 
 categoryController.deleteCategory = async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.categoryId)
+    const categoryId = req.params.categoryId
+
+    const category = await Category.findById(categoryId)
     if (!category) {
       return res.status(404).json({ error: 'Category not found' })
     }
-    await Category.findByIdAndRemove(req.params.categoryId)
+
+    if (category.name.toLowerCase() === 'uncategorized') {
+      return res.status(400).json({ error: 'Uncategorized category cannot be deleted' })
+    }
+
+    const productsWithDeletedCategory = await Product.find({ category: categoryId })
+
+    const uncategorizedCategory = await Category.findOne({ name: 'uncategorized' })
+    const uncategorizedCategoryId = uncategorizedCategory ? uncategorizedCategory._id : await createDefaultCategory()
+
+    for (const product of productsWithDeletedCategory) {
+      product.category = uncategorizedCategoryId
+      await product.save()
+    }
+
+    await Category.findByIdAndRemove(categoryId)
+
     res.status(200).json({ message: 'Category deleted successfully' })
   } catch (error) {
     console.log('ERROR:', error)

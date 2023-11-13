@@ -11,7 +11,7 @@ node_modules/
 /build
 
 # misc
-/haha
+/haha/
 /docs
 .DS_Store
 .env.local
