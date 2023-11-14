@@ -22,22 +22,37 @@ The Point of Sale App backend is designed for a small coffee shop to efficiently
 
 ## API Endpoints
 
-The application provides the following API endpoints:
+### Authentication
 
-- `POST /auth/login`: Log in with username and password.
+- `POST /auth/login`: Log in with email and password.
+
+### Users
+
 - `POST /api/users/register`: Create a new user.
-- `GET /api/categories`: Get all categories.
+- `PUT /api/users/:userId/password`: Update user password.
+
+### Categories
+
+- `GET /api/categories`: Get categories.
 - `POST /api/categories`: Create a new category.
 - `PUT /api/categories/:categoryId`: Update a category.
 - `DELETE /api/categories/:categoryId`: Delete a category.
-- `GET /api/products`: Get all products.
+
+### Products
+
+- `GET /api/products`: Get products.
 - `GET /api/products/:productId`: Get a product by ID.
 - `POST /api/products`: Create a new product.
 - `PUT /api/products/:productId`: Update a product.
+- `GET /api/products/:categoryName`: Get products by category.
 - `DELETE /api/products/:productId`: Delete a product.
-- `PUT /api/users/:userId/password`: Update user password.
+
+### Orders
+
 - `GET /api/orders`: Get all orders.
 - `POST /api/orders`: Place an order.
+- `PUT /api/orders/:orderId`: Update an order.
+- `DELETE /api/orders/:orderId`: Delete an order.
 
 ## Installation and Setup
 
