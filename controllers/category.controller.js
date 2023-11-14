@@ -17,28 +17,89 @@ async function createDefaultCategory () {
   }
 }
 
+// categoryController.getCategories = async (req, res, next) => {
+//   try {
+//     const { page = 1, limit = 5, search } = req.query
+//     const skip = (page - 1) * limit
+//     const query = {}
+
+//     if (search) {
+//       query.name = { $regex: new RegExp(search, 'i') }
+//     }
+
+//     const count = await Category.countDocuments(query)
+//     const totalPages = Math.ceil(count / limit)
+
+//     const categories = await Category.find(query)
+//       .sort({ name: 1 })
+//       .skip(skip)
+//       .limit(parseInt(limit))
+//     if (categories.length === 0) {
+//       return res.status(200).json({
+//         message: 'No categories found.'
+//       })
+//     }
+//     res.status(200).json({
+//       loading: false,
+//       categories,
+//       currentPage: parseInt(page),
+//       totalPages,
+//       totalCategories: count
+//     })
+//   } catch (error) {
+//     console.log('ERROR:', error)
+//     next(error)
+//   }
+// }
+
 categoryController.getCategories = async (req, res, next) => {
   try {
     const { page = 1, limit = 5, search } = req.query
     const skip = (page - 1) * limit
     const query = {}
-
     if (search) {
       query.name = { $regex: new RegExp(search, 'i') }
     }
-
     const count = await Category.countDocuments(query)
     const totalPages = Math.ceil(count / limit)
 
-    const categories = await Category.find(query)
-      .sort({ name: 1 })
-      .skip(skip)
-      .limit(parseInt(limit))
+    const categories = await Category.aggregate([
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: 'category',
+          as: 'products'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          productCount: { $size: '$products' }
+        }
+      },
+      {
+        $sort: { name: 1 }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: parseInt(limit)
+      }
+    ])
+
     if (categories.length === 0) {
       return res.status(200).json({
         message: 'No categories found.'
       })
     }
+
     res.status(200).json({
       loading: false,
       categories,

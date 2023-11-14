@@ -175,11 +175,11 @@ userController.sendPasswordResetToken = async (req, res, next) => {
     user.resetPasswordExpires = Date.now() + 3600000
     console.log('user.resetPasswordExpires', user.resetPasswordExpires)
     await user.save()
-    sendResetTokenEmail(resetToken, email, res)
-    // res.status(200).json({
-    //   message: 'successful',
-    //   resetPasswordToken: user.resetPasswordToken,
-    // })
+    // sendResetTokenEmail(resetToken, email, res)
+    res.status(200).json({
+      message: 'successful',
+      resetPasswordToken: user.resetPasswordToken
+    })
   } catch (error) {
     console.error('ERROR sendPasswordResetToken be: ', error)
     next(error)

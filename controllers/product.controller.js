@@ -18,6 +18,7 @@ productController.getProducts = async (req, res, next) => {
       .populate('category', 'name')
       .skip(skip)
       .limit(parseInt(limit))
+      .sort({ name: 1 })
 
     if (products.length === 0) {
       res.status(200).json({ message: 'No products found' })
@@ -36,7 +37,9 @@ productController.getProducts = async (req, res, next) => {
 }
 productController.getAllProducts = async (req, res, next) => {
   try {
-    const products = await Product.find().populate('category', 'name')
+    const products = await Product.find()
+      .populate('category', 'name')
+      .sort({ name: 1 })
     res.status(200).json({ products })
   } catch (error) {
     console.log('ERROR:', error)
@@ -46,10 +49,10 @@ productController.getAllProducts = async (req, res, next) => {
 
 productController.getProductsByCategory = async (req, res, next) => {
   try {
-    let { categoryName } = req.params
-    categoryName = categoryName.toLowerCase()
+    const { categoryName } = req.params
     const { page = 1, limit = 5 } = req.query
     const skip = (page - 1) * limit
+    const categoryRegex = new RegExp(categoryName, 'i')
 
     if (categoryName === 'all') {
       const count = await Product.countDocuments()
@@ -58,6 +61,7 @@ productController.getProductsByCategory = async (req, res, next) => {
       const products = await Product.find()
         .skip(skip)
         .limit(parseInt(limit))
+        .sort({ name: 1 })
 
       return res.status(200).json({
         categoryName: 'All',
@@ -68,8 +72,7 @@ productController.getProductsByCategory = async (req, res, next) => {
       })
     }
 
-    // Continue with fetching products for a specific category
-    const category = await Category.findOne({ name: categoryName })
+    const category = await Category.findOne({ name: categoryRegex })
     if (!category) {
       return res.status(404).json({ error: 'Category not found' })
     }
@@ -80,6 +83,7 @@ productController.getProductsByCategory = async (req, res, next) => {
     const products = await Product.find({ category: category._id })
       .skip(skip)
       .limit(parseInt(limit))
+      .sort({ name: 1 })
 
     res.status(200).json({
       categoryName: category.name,
